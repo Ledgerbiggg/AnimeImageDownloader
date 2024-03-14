@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,6 +31,13 @@ func (h *HttpDos) Get() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 创建自定义的 Transport
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 忽略证书验证
+	}
+
+	// 创建客户端并指定 Transport
+	client := &http.Client{Transport: tr}
 
 	// 添加自定义请求头11
 	for key, value := range h.headers {
@@ -37,7 +45,6 @@ func (h *HttpDos) Get() ([]byte, error) {
 	}
 
 	//  发送请求
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
